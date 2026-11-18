@@ -2,9 +2,11 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const EASE = 'cubic-bezier(.5,0,.2,1)', NAME = 'KENZO ELIJAH BUAN';
 let addStar;
+const STARS = false; // true brings the star field (and the cursor → star ending) back
 
 /* ---- stars: twinkling, drifting right → left (cursors join them at the end) ---- */
 (() => {
+  if (!STARS) { $('#stars').style.display = 'none'; addStar = () => {}; return; }
   const cv = $('#stars'), x = cv.getContext('2d'); let W, H, S;
   const size = () => { W = cv.width = innerWidth; H = cv.height = innerHeight;
     S = Array.from({ length: W * H / 4500 | 0 }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.3 + .2, p: Math.random() * 6, s: Math.random() * .02 + .005, v: Math.random() * .15 + .02 })); };
@@ -26,7 +28,7 @@ for (let i = 0; i < 4; i++) {
 }
 const sets = $$('.set'), nameEl = sets[1].querySelector('.name');
 const fit = () => { const r = document.documentElement.style; r.setProperty('--fs', '100px');
-  r.setProperty('--fs', Math.min(100 * innerWidth * .9 / nameEl.getBoundingClientRect().width, innerHeight * .28) + 'px'); };
+  r.setProperty('--fs', Math.min(100 * innerWidth * (innerWidth < 800 ? .9 : .52) / nameEl.getBoundingClientRect().width, innerHeight * .2) + 'px'); };
 
 /* ---- headings (.bt) become letters a cursor can draw ---- */
 $$('.bt').forEach(el => {
@@ -68,15 +70,13 @@ async function type(c, chs) {
     mv(c, r.left + r.width * .15, r.bottom - r.height * .1, .2); await wait(220);
     ch.classList.add('on'); mv(c, r.left + r.width * .85, r.top + r.height * .15, .5); await wait(520); }
 }
-/* grab the photo and drag it into place */
-async function dropPhoto(c, el) {
-  const mid = r => [r.left + r.width / 2, r.top + r.height / 2];
-  const a = mid(el.getBoundingClientRect()); el.classList.remove('away');
-  const b = mid(el.getBoundingClientRect()); el.classList.add('away'); el.offsetWidth;
-  mv(c, a[0], a[1], .6); await wait(650); click(c);
-  el.style.opacity = 1; el.classList.add('grab'); await wait(300);
-  el.style.transition = `transform 1.3s ${EASE}`; el.classList.remove('away'); mv(c, b[0], b[1], 1.3); await wait(1400);
-  el.classList.remove('grab');
+/* sweep down the ASCII portrait, printing it line by line */
+async function scan(c, el) {
+  const r = el.getBoundingClientRect(), n = 8, T = 2.8;
+  mv(c, r.left, r.top, .4); await wait(450); click(c);
+  el.style.transition = `clip-path ${T}s linear`; el.classList.add('in');
+  for (let i = 0; i <= n; i++) { mv(c, i % 2 ? r.left : r.right, r.top + r.height * i / n, T / n); await wait(T * 1000 / n); }
+  el.style.clipPath = 'none';
 }
 
 /* idle cursors wander around; busy ones are working */
@@ -109,17 +109,16 @@ let chain = (async () => {
   let p = (innerWidth - nameEl.getBoundingClientRect().width) / 2 - W;   // centre the name
   track.style.transform = `translate3d(${p}px,0,0)`;
 
-  const stage = job(C[0], () => dragIn(C[0], $('.stage'), 1.2));        // 1) foundation
-  await Promise.all([stage,
-    job(C[1], async () => { await wait(300); await dragIn(C[1], $('.nav'), 1.2); }),
-    job(C[2], async () => { await wait(500); await inflate(C[2], $('.moonbox')); }),
-    job(C[8], async () => { await stage; await dragIn(C[8], $('.card.l'), .8); }),
-    job(C[9], async () => { await stage; await dragIn(C[9], $('.card.r'), .8); })]);
+  // 1) foundation: nav, moon, status card
+  await Promise.all([
+    job(C[1], async () => { await wait(200); await dragIn(C[1], $('.nav'), 1.1); }),
+    job(C[2], async () => { await wait(400); await inflate(C[2], $('.moonbox')); }),
+    job(C[9], async () => { await wait(600); await dragIn(C[9], $('.card.r'), .8); })]);
 
-  track.classList.add('wire'); await wait(700);                          // 2) letters + photo
+  track.classList.add('wire'); await wait(700);                          // 2) letters + ASCII portrait
   const L = [...sets[1].querySelectorAll('.ch')], sz = Math.ceil(L.length / 4);
   await Promise.all([0, 1, 2, 3].map(i => job(C[3 + i], () => type(C[3 + i], L.slice(i * sz, (i + 1) * sz)))).concat(
-    job(C[7], async () => { await wait(600); await dropPhoto(C[7], $('.photo')); })));
+    job(C[7], async () => { await wait(300); await scan(C[7], $('.resume')); })));
 
   $$('.sign .ch').forEach(ch => ch.classList.add('on'));                  // 3) lights on, sign scrolls
   document.body.classList.add('lit');
