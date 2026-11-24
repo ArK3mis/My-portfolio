@@ -1,6 +1,7 @@
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const wait = ms => new Promise(r => setTimeout(r, ms));
 const EASE = 'cubic-bezier(.5,0,.2,1)', NAME = 'KENZO ELIJAH BUAN';
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let addStar;
 const STARS = false; // true brings the star field (and the cursor → star ending) back
 
@@ -27,8 +28,17 @@ for (let i = 0; i < 4; i++) {
   track.append(s);
 }
 const sets = $$('.set'), nameEl = sets[1].querySelector('.name');
+const stacked = () => matchMedia('(max-width:900px) and (orientation:portrait)').matches;
+const nameFactor = () => stacked() ? .9 : innerWidth < 900 ? .5 : innerWidth < 1200 ? .56 : .62;
 const fit = () => { const r = document.documentElement.style; r.setProperty('--fs', '100px');
-  r.setProperty('--fs', Math.min(100 * innerWidth * (innerWidth < 800 ? .9 : .62) / nameEl.getBoundingClientRect().width, innerHeight * .24) + 'px'); };
+  r.setProperty('--fs', Math.min(100 * innerWidth * nameFactor() / nameEl.getBoundingClientRect().width, innerHeight * .24) + 'px'); };
+
+/* sign position/width + re-fit when the window size or orientation changes */
+let SW = 0, px = 0, ready = false, lastW = innerWidth, rt;
+const measure = () => { SW = sets[1].getBoundingClientRect().left - sets[0].getBoundingClientRect().left; };
+addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => {
+  if (!ready || innerWidth === lastW) return; lastW = innerWidth;
+  const k = SW; fit(); measure(); px *= SW / k; }, 150); });
 
 /* ---- headings (.bt) become letters a cursor can draw ---- */
 $$('.bt').forEach(el => {
@@ -98,9 +108,14 @@ async function buildSection(sec) {
 /* ---- hero build, runs on load ---- */
 let chain = (async () => {
   await document.fonts.load('100px Anton'); fit(); await wait(400);
-  const W = sets[1].getBoundingClientRect().left - sets[0].getBoundingClientRect().left;
-  let p = (innerWidth - nameEl.getBoundingClientRect().width) / 2 - W;   // centre the name
-  track.style.transform = `translate3d(${p}px,0,0)`;
+  measure(); px = (innerWidth - nameEl.getBoundingClientRect().width) / 2 - SW;   // centre the name
+  track.style.transform = `translate3d(${px}px,0,0)`;
+  if (REDUCE) {   // reduced motion: show the finished page, no cursors, no scrolling
+    C.forEach(c => c.remove()); finished = true; io.disconnect();
+    $$('.drag').forEach(el => { el.style.clipPath = 'none'; el.classList.add('in'); });
+    $$('.ch').forEach(ch => ch.classList.add('on'));
+    track.classList.add('wire'); document.body.classList.add('lit'); return;
+  }
 
   // 1) foundation: nav + status card
   await Promise.all([
@@ -116,8 +131,9 @@ let chain = (async () => {
   $$('.sign .ch').forEach(ch => ch.classList.add('on'));                  // 3) lights on, sign scrolls
   document.body.classList.add('lit');
   let t0 = performance.now();
-  requestAnimationFrame(function tick(t) { p -= (t - t0) / 1000 * 110; t0 = t; if (p <= -2 * W) p += W;
-    track.style.transform = `translate3d(${p}px,0,0)`; requestAnimationFrame(tick); });
+  ready = true;
+  requestAnimationFrame(function tick(t) { px -= (t - t0) / 1000 * Math.max(45, innerWidth * .08); t0 = t; if (px <= -2 * SW) px += SW;
+    track.style.transform = `translate3d(${px}px,0,0)`; requestAnimationFrame(tick); });
 })();
 
 const io = new IntersectionObserver(es => es.forEach(e => {
@@ -133,3 +149,9 @@ window.toggleTheme = () => { setTheme(root.dataset.theme === 'light' ? 'dark' : 
 let savedTheme = null; try { savedTheme = localStorage.getItem('theme'); } catch {}
 setTheme(savedTheme || 'dark');
 modeBtn.addEventListener('click', window.toggleTheme);
+
+/* ---- mobile menu ---- */
+const navEl = $('.nav'), burger = $('#burger');
+const closeMenu = () => { navEl.classList.remove('open'); burger.textContent = '☰'; burger.setAttribute('aria-expanded', 'false'); };
+burger.addEventListener('click', () => { const o = navEl.classList.toggle('open'); burger.textContent = o ? '✕' : '☰'; burger.setAttribute('aria-expanded', o); });
+$$('.nav nav a').forEach(a => a.addEventListener('click', closeMenu));
