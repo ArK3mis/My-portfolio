@@ -28,7 +28,7 @@ for (let i = 0; i < 4; i++) {
 }
 const sets = $$('.set'), nameEl = sets[1].querySelector('.name');
 const fit = () => { const r = document.documentElement.style; r.setProperty('--fs', '100px');
-  r.setProperty('--fs', Math.min(100 * innerWidth * (innerWidth < 800 ? .9 : .52) / nameEl.getBoundingClientRect().width, innerHeight * .2) + 'px'); };
+  r.setProperty('--fs', Math.min(100 * innerWidth * (innerWidth < 800 ? .9 : .62) / nameEl.getBoundingClientRect().width, innerHeight * .24) + 'px'); };
 
 /* ---- headings (.bt) become letters a cursor can draw ---- */
 $$('.bt').forEach(el => {
@@ -56,13 +56,6 @@ async function dragIn(c, el, d = 1.1) {
   el.style.transition = `clip-path ${d}s ${EASE}`; el.classList.add('in');
   mv(c, r.right, edge ? r.top + r.height / 2 : r.bottom, d); await wait(d * 1000 + 100);
   el.style.clipPath = 'none';
-}
-/* drag from the centre outward to inflate the moon */
-async function inflate(c, box) {
-  const r = box.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, k = r.width / 2 * .7071;
-  mv(c, cx, cy, .4); await wait(450); click(c);
-  const m = box.firstElementChild; m.style.transition = `transform 1.3s ${EASE}`; m.style.transform = 'scale(1)';
-  mv(c, cx + k, cy + k, 1.3); await wait(1400);
 }
 /* trace each letter bottom → top while it fills in */
 async function type(c, chs) {
@@ -109,16 +102,16 @@ let chain = (async () => {
   let p = (innerWidth - nameEl.getBoundingClientRect().width) / 2 - W;   // centre the name
   track.style.transform = `translate3d(${p}px,0,0)`;
 
-  // 1) foundation: nav, moon, status card
+  // 1) foundation: nav + status card
   await Promise.all([
     job(C[1], async () => { await wait(200); await dragIn(C[1], $('.nav'), 1.1); }),
-    job(C[2], async () => { await wait(400); await inflate(C[2], $('.moonbox')); }),
     job(C[9], async () => { await wait(600); await dragIn(C[9], $('.card.r'), .8); })]);
 
   track.classList.add('wire'); await wait(700);                          // 2) letters + ASCII portrait
   const L = [...sets[1].querySelectorAll('.ch')], sz = Math.ceil(L.length / 4);
   await Promise.all([0, 1, 2, 3].map(i => job(C[3 + i], () => type(C[3 + i], L.slice(i * sz, (i + 1) * sz)))).concat(
-    job(C[7], async () => { await wait(300); await scan(C[7], $('.resume')); })));
+    job(C[7], async () => { await wait(300); await scan(C[7], $('.resume')); }),
+    job(C[0], async () => { await wait(1500); await dragIn(C[0], $('.quote'), 1.4); })));
 
   $$('.sign .ch').forEach(ch => ch.classList.add('on'));                  // 3) lights on, sign scrolls
   document.body.classList.add('lit');

@@ -11,11 +11,6 @@ body{background:#000;color:#e8efff;font:400 16px/1.6 Inter,sans-serif;overflow-x
 .n3{width:55vw;height:40vh;left:22vw;bottom:-14vh;background:#4338ca;opacity:.4}
 .band{position:absolute;left:-20%;top:32%;width:140%;height:26vh;transform:rotate(-16deg);filter:blur(34px);background:linear-gradient(90deg,transparent,rgba(120,180,255,.2),rgba(210,230,255,.25),rgba(120,180,255,.2),transparent)}
 @keyframes drift{to{transform:translate(6vw,5vh) scale(1.15)}}
-.moonbox{position:absolute;right:8vw;top:12vh;width:min(14vh,12vw);aspect-ratio:1;z-index:1}
-body.lit .moonbox{animation:bob 9s ease-in-out infinite alternate}
-@keyframes bob{to{transform:translateY(14px)}}
-.moon{width:100%;height:100%;border-radius:50%;transform:scale(0);position:relative;background:radial-gradient(circle at 36% 32%,#fff,#dbe8ff 30%,#8fb0f0 62%,#34509a);box-shadow:0 0 36px rgba(150,200,255,.5),0 0 90px rgba(59,130,246,.35),inset -18px -12px 40px rgba(10,20,70,.55)}
-.moon::before{content:"";position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 30% 40%,rgba(60,90,160,.35) 0 7%,transparent 8%),radial-gradient(circle at 62% 28%,rgba(60,90,160,.3) 0 5%,transparent 6%),radial-gradient(circle at 58% 66%,rgba(60,90,160,.35) 0 10%,transparent 11%),radial-gradient(circle at 25% 72%,rgba(60,90,160,.28) 0 4%,transparent 5%)}
 /* ---------- glass ---------- */
 .card,.nav,.proj,.pill,.term{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px) saturate(1.3);-webkit-backdrop-filter:blur(10px) saturate(1.3);box-shadow:none}
 .proj:hover,.card:hover{border-color:rgba(125,211,252,.35)}
@@ -36,9 +31,7 @@ body.lit .moonbox{animation:bob 9s ease-in-out infinite alternate}
 .ch{--fill:#eaf6ff;position:relative;display:inline-block;color:transparent;-webkit-text-stroke:1.5px rgba(125,211,252,.6);padding-right:.04em}
 .ch::after{content:attr(data-c);position:absolute;left:0;top:0;color:var(--fill);-webkit-text-stroke:0;clip-path:inset(100% -1em -1em -1em);transition:clip-path .5s linear}
 .ch.on::after{clip-path:inset(-1em)}
-body.lit .sign .ch::after{text-shadow:0 0 4px #7dd3fc,0 0 14px #3b82f6,0 0 36px #2563eb,0 0 80px #1d4ed8}
 .dot{font-size:.4em;margin:0 .7em;color:#bfe6ff}
-body.lit .dot{text-shadow:0 0 10px #7dd3fc,0 0 30px #3b82f6}
 body.lit .sign{animation:on 1.3s,flick 7s 1.3s infinite}
 @keyframes on{0%{opacity:0}10%{opacity:1}14%{opacity:.2}22%{opacity:1}30%{opacity:.4}40%,100%{opacity:1}}
 @keyframes flick{0%,91%,95%,100%{opacity:1}92%{opacity:.55}93%{opacity:1}96%{opacity:.7}}
@@ -102,17 +95,29 @@ h2 .ch.on::after{text-shadow:0 0 20px rgba(59,130,246,.55)}
 [data-theme=light] .ch{--fill:#0b2a66;-webkit-text-stroke-color:rgba(37,99,235,.5)}
 [data-theme=light] h2 em .ch{--fill:#2563eb}
 [data-theme=light] h2 .ch.on::after{text-shadow:none}
-[data-theme=light] body.lit .sign .ch::after{text-shadow:0 0 16px rgba(37,99,235,.35)}
 [data-theme=light] .dot{color:#2563eb;text-shadow:none}
 
 /* ---------- pitch black: no stars / clouds for now (set STARS=true in main.js to bring stars back) ---------- */
 .neb,.band{display:none}
 /* ---------- hollow neon name: white outline that still glows ---------- */
-.sign .ch::after{color:transparent;-webkit-text-stroke:1.6px var(--fill)}
-.sign{-webkit-mask-image:linear-gradient(90deg,transparent 10%,#000 22%);mask-image:linear-gradient(90deg,transparent 10%,#000 22%)}
+.sign .ch::after{color:transparent;-webkit-text-stroke:.9px var(--fill)}
+.sign{padding:30vh 0;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent 92%);mask-image:linear-gradient(90deg,#000 80%,transparent 92%)}
 /* ---------- resume-style ASCII portrait ---------- */
-.resume{position:absolute;left:3vw;top:50%;transform:translateY(-50%);z-index:5;pointer-events:none}
-.ascii{margin:0;font:clamp(4px,.38vw,7px)/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#dbeafe;white-space:pre;text-shadow:0 0 6px rgba(125,190,255,.55)}
+.resume{position:absolute;right:3vw;top:50%;transform:translateY(-50%);z-index:5;pointer-events:none}
+.ascii{margin:0;font:clamp(4px,.34vw,6.5px)/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#dbeafe;white-space:pre;text-shadow:0 0 6px rgba(125,190,255,.55)}
 .resume figcaption{margin-top:12px;font:500 11px/1.6 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.14em;color:var(--mut);text-transform:uppercase}
 [data-theme=light] .ascii{color:#0b2a66;text-shadow:none}
-@media(max-width:800px){.resume{left:50%;top:70px;transform:translateX(-50%)}.sign{top:68%;-webkit-mask-image:none;mask-image:none}}
+@media(max-width:800px){.resume{left:50%;right:auto;top:70px;transform:translateX(-50%)}.sign{top:68%;-webkit-mask-image:none;mask-image:none}}
+
+/* ---------- neon tube name: thin hollow outline, white-hot core, glow only along the lines ---------- */
+.sign .ch{-webkit-text-stroke:2px rgba(59,130,246,.28);transition:-webkit-text-stroke-color .5s;isolation:isolate}
+.sign .ch.on{-webkit-text-stroke-color:#4d8dff}
+body.lit .sign .ch::before{content:attr(data-c);position:absolute;left:.03em;top:.04em;z-index:-1;color:transparent;-webkit-text-stroke:2px rgba(30,64,175,.6)}
+body.lit .track{filter:drop-shadow(0 0 2px rgba(147,197,253,.9)) drop-shadow(0 0 7px #3b82f6) drop-shadow(0 0 18px #2563eb) drop-shadow(0 0 42px rgba(29,78,216,.8))}
+.dot{color:#e0f0ff}
+[data-theme=light] body.lit .track{filter:drop-shadow(0 0 5px rgba(37,99,235,.4))}
+[data-theme=light] .sign .ch::before{-webkit-text-stroke-color:rgba(37,99,235,.25)}
+/* ---------- quote under the name ---------- */
+.quote{position:absolute;left:50%;top:calc(50% + var(--fs,100px)*.62 + 18px);transform:translateX(-50%);z-index:4;padding:12px 18px;white-space:nowrap;font:300 clamp(12px,1.25vw,17px) Inter,sans-serif;letter-spacing:.42em;text-transform:uppercase;color:#cfe3ff;text-shadow:0 0 10px rgba(96,165,250,.6),0 0 24px rgba(59,130,246,.35)}
+[data-theme=light] .quote{color:#1e3a6e;text-shadow:none}
+@media(max-width:800px){.quote{top:calc(68% + var(--fs,100px)*.62 + 18px);letter-spacing:.25em}}
